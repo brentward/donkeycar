@@ -298,6 +298,12 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None, camera_type
         V.add(imu, outputs=['imu/acl_x', 'imu/acl_y', 'imu/acl_z',
             'imu/gyr_x', 'imu/gyr_y', 'imu/gyr_z'], threaded=True)
 
+    #Teensy Ultrasonic
+    if cfg.HAVE_TEENSY_ULTRASONIC:
+        from donkeycar.parts.teensy_ultrasonic import TeensyUltrasonic
+        teensy_ultrasonic = TeensyUltrasonic(port=cfg.TEENSY_ULTRASONIC_PORT, baud_rate=cfg.TEENSY_ULTRASONIC_BAUDRATE)
+        V.add(teensy_ultrasonic, outputs=['range/y'], threaded=True)
+
     class ImgPreProcess():
         '''
         preprocess camera image for inference.
@@ -335,10 +341,12 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None, camera_type
     #IMU
     elif model_type == "imu":
         assert(cfg.HAVE_IMU)
+        assert(cfg.HAVE_TEENSY_ULTRASONIC)
         #Run the pilot if the mode is not user.
         inputs=[inf_input,
             'imu/acl_x', 'imu/acl_y', 'imu/acl_z',
-            'imu/gyr_x', 'imu/gyr_y', 'imu/gyr_z']
+            'imu/gyr_x', 'imu/gyr_y', 'imu/gyr_z',
+            'range/y']
     else:
         inputs=[inf_input]
 
@@ -593,6 +601,10 @@ def drive(cfg, model_path=None, use_joystick=False, model_type=None, camera_type
 
         types +=['float', 'float', 'float',
            'float', 'float', 'float']
+
+    if cfg.HAVE_TEENSY_ULTRASONIC:
+        inputs += ['range/y']
+        types += ['float']
 
     if cfg.RECORD_DURING_AI:
         inputs += ['pilot/angle', 'pilot/throttle']

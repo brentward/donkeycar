@@ -125,7 +125,9 @@ def collate_records(records, gen_records, opts):
             gyro_y = float(json_data['imu/gyr_y'])
             gyro_z = float(json_data['imu/gyr_z'])
 
-            sample['imu_array'] = np.array([accl_x, accl_y, accl_z, gyro_x, gyro_y, gyro_z])
+            range_y = float(json_data['range/y'])
+
+            sample['imu_array'] = np.array([accl_x, accl_y, accl_z, gyro_x, gyro_y, gyro_z, range_y])
         except:
             pass
 

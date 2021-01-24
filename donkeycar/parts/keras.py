@@ -169,7 +169,6 @@ class KerasLinear(KerasPilot):
         return steering[0][0], throttle[0][0]
 
 
-
 class KerasIMU(KerasPilot):
     '''
     A Keras part that take an image and IMU vector as input,
@@ -180,7 +179,7 @@ class KerasIMU(KerasPilot):
 
     X_keys = ['cam/image_array','imu_array']
     y_keys = ['user/angle', 'user/throttle']
-    
+
     def rt(rec):
         rec['imu_array'] = np.array([ rec['imu/acl_x'], rec['imu/acl_y'], rec['imu/acl_z'],
             rec['imu/gyr_x'], rec['imu/gyr_y'], rec['imu/gyr_z'] ])
@@ -194,20 +193,23 @@ class KerasIMU(KerasPilot):
                                                     train_frac=cfg.TRAIN_TEST_SPLIT)
 
     '''
-    def __init__(self, model=None, num_outputs=2, num_imu_inputs=6, input_shape=(120, 160, 3), roi_crop=(0,0), *args, **kwargs):
+
+    def __init__(self, model=None, num_outputs=2, num_imu_inputs=7, input_shape=(120, 160, 3), roi_crop=(0, 0), *args,
+                 **kwargs):
         super(KerasIMU, self).__init__(*args, **kwargs)
         self.num_imu_inputs = num_imu_inputs
-        self.model = default_imu(num_outputs = num_outputs, num_imu_inputs = num_imu_inputs, input_shape=input_shape, roi_crop=roi_crop)
+        self.model = default_imu(num_outputs=num_outputs, num_imu_inputs=num_imu_inputs, input_shape=input_shape,
+                                 roi_crop=roi_crop)
         self.compile()
 
     def compile(self):
         self.model.compile(optimizer=self.optimizer,
-                  loss='mse')
-        
-    def run(self, img_arr, accel_x, accel_y, accel_z, gyr_x, gyr_y, gyr_z):
-        #TODO: would be nice to take a vector input array.
+                           loss='mse')
+
+    def run(self, img_arr, accel_x, accel_y, accel_z, gyr_x, gyr_y, gyr_z, range_y):
+        # TODO: would be nice to take a vector input array.
         img_arr = img_arr.reshape((1,) + img_arr.shape)
-        imu_arr = np.array([accel_x, accel_y, accel_z, gyr_x, gyr_y, gyr_z]).reshape(1,self.num_imu_inputs)
+        imu_arr = np.array([accel_x, accel_y, accel_z, gyr_x, gyr_y, gyr_z, range_y]).reshape(1, self.num_imu_inputs)
         outputs = self.model.predict([img_arr, imu_arr])
         steering = outputs[0]
         throttle = outputs[1]
