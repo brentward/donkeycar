@@ -9,6 +9,7 @@ dist/*
 .git.bfg-report
 .DS_Store
 lag_log.csv
+.python-version
 
 .cache
 site/*
